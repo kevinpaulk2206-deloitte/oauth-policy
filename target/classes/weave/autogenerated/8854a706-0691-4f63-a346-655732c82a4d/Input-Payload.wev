@@ -1,0 +1,19 @@
+%dw 2.0
+
+type auto_8854a706_0691_4f63_a346_655732c82a4d_Input_Payload = Array<{  country: String,   pincode: Number,   showName: String,   coupon?: Array<Any>, 
+  city: String, 
+  showStartTime: String, 
+  showDate: String, 
+  seats: Number, 
+  orgId: Number, 
+  showId: Number, 
+  price: Number, 
+  genre: String, 
+  activeDate: String, 
+  addressLine1: String, 
+  addressLine2: String, 
+  state: String, 
+  showEndTime: String, 
+  _?: Any
+}>
+

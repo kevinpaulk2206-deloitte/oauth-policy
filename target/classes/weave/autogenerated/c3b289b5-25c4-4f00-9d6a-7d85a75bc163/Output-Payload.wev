@@ -1,0 +1,23 @@
+%dw 2.0
+
+type auto_c3b289b5_25c4_4f00_9d6a_7d85a75bc163_Output_Payload = {
+  country: String, 
+  pincode: Number, 
+  showName: String, 
+  coupon?: Array<Any>, 
+  city: String, 
+  showStartTime: String, 
+  showDate: String, 
+  seats: Number, 
+  orgId: Number, 
+  showId: Number, 
+  price: Number, 
+  genre: String, 
+  activeDate: String, 
+  addressLine1: String, 
+  addressLine2: String, 
+  state: String, 
+  showEndTime: String, 
+  _?: Any
+}
+

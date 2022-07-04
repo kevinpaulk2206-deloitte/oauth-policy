@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_e1b9e714_32ce_41b0_a336_a6be18faa4a2_Output_Variables_soldTickets = Any
+

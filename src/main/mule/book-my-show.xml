@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <apikit:config name="book-my-show-config" api="resource::ddbd4ad5-6f2a-4406-8403-dd1be00842b9:book-my-show:1.0.4:raml:zip:book-my-show.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="book-my-show-main">
+        <http:listener config-ref="book-my-show-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="book-my-show-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="get:\user\show\(show-id):book-my-show-config">
+        <ee:transform doc:name="Transform Message" doc:id="fbe3f414-2ffd-42d6-8dc9-c684355039f4">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="showId"><![CDATA[attributes.uriParams."show-id"]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Flow Reference" doc:id="436edd06-a942-4b01-b2b3-27369c84dbc3" name="getSpecificShowDetails" />
+    </flow>
+    <flow name="get:\user:book-my-show-config">
+        <flow-ref doc:name="Flow Reference" doc:id="013eba3b-f0e5-4f18-a9a2-a4755d091666" name="getShowDetailsWithFilters" />
+    </flow>
+    <flow name="get:\user\(user-id)\Booking\(Booking-id):book-my-show-config">
+        <flow-ref doc:name="Flow Reference" doc:id="8eeefdda-3e1c-4805-8edd-08bdb1e52012" name="getUserBookingDetailsFlow" />
+    </flow>
+    <flow name="post:\user:application\json:book-my-show-config">
+        <flow-ref doc:name="Flow Reference" doc:id="689001eb-75da-495c-838f-829e6bbe4e24" name="postUserFlow" />
+    </flow>
+    <flow name="post:\user\(user-id)\Booking:application\json:book-my-show-config">
+        <ee:transform doc:name="Transform Message" doc:id="684373fd-fc1c-4e83-b9a8-2f97b8a999bb">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="userId"><![CDATA[attributes.uriParams.'user-id' as Number]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Flow Reference" doc:id="0a9c4553-e7af-4249-a2c9-53de211bf570" name="userBookingShow" />
+    </flow>
+    <flow name="get:\user\(user-id)\recommendation:book-my-show-config">
+        <ee:transform>
+            <ee:variables>
+                <ee:set-variable variableName="userId"><![CDATA[attributes.uriParams.'user-id']]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <flow-ref doc:name="Flow Reference" doc:id="054194e4-2e8f-4b9d-af2d-46bf34ae9fea" name="getRecommendedShowFlow" />
+    </flow>
+</mule>
